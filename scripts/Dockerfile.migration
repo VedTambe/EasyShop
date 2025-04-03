@@ -1,0 +1,26 @@
+# Use the base Node.js image
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /app
+
+#Install necessary build dependencies
+RUN apk add --no-cache python3 make g++
+
+# Copy necessary files from the correct location
+COPY package.json package-lock.json ./
+
+#cpoy scripts and data
+COPY scripts ./scripts
+COPY .db ./ .db/
+
+# Install dependencies
+RUN npm install
+RUN npm install --save-dev @types/mongoose
+
+#Set environment variables
+ENV NODE_ENV=development
+
+
+# Run migration script
+CMD ["npx", "ts-node", "--project","scripts/tsconfig.json","scripts/migrate-data.ts"]
