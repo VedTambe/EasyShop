@@ -15,13 +15,13 @@ pipeline {
             }
         }
         
-        stage("Security Scan - Docker Trivy") {  // ✅ Using Docker Scan for Image Scanning
+        stage("Security Scan - Docker Trivy") {  
             steps {
                 sh "trivy image easy-shop:latest"
             }
         }
 
-        stage("Security Scan - Trivy") {  // ✅ Using Trivy for Detailed Vulnerability Scanning
+        stage("Security Scan - Trivy") { 
             steps {
                 sh "trivy image easy-shop:latest"
             }
