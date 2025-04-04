@@ -1,0 +1,57 @@
+pipeline {
+    agent any 
+    
+    stages{
+        
+        stage("Code Clone") {
+            steps { 
+                git url: "https://github.com/VedTambe/EasyShop.git", branch: "EasyShop"
+            }
+        }
+        
+        stage("Code Build") {
+            steps {
+                sh "docker build -t easy-shop:latest ."
+            }
+        }
+        
+        stage("Security Scan - Docker Trivy") {  // ✅ Using Docker Scan for Image Scanning
+            steps {
+                sh "trivy image easy-shop:latest"
+            }
+        }
+
+        stage("Security Scan - Trivy") {  // ✅ Using Trivy for Detailed Vulnerability Scanning
+            steps {
+                sh "trivy image easy-shop:latest"
+            }
+        }
+        
+        stage("Push to Docker Hub") {
+            steps { 
+                withCredentials([usernamePassword(credentialsId: "dockerHubCreds",
+                                                  passwordVariable: "dockerHubPass",
+                                                  usernameVariable: "dockerHubUser")]) {
+                    
+                    sh "docker image tag easy-shop:latest ${dockerHubUser}/easyshop:latest"
+                    
+                    sh "echo ${dockerHubPass} | docker login -u ${dockerHubUser} --password-stdin"
+                    
+                    sh "docker push ${dockerHubUser}/easyshop:latest"
+                }
+            }
+        }
+        
+        stage("Deploy Application") {
+            steps {
+                sh "docker compose up -d"  
+            }
+        }
+        
+        stage("Cleanup") {  
+            steps {
+                sh "docker image prune -af"
+            }
+        }
+    }
+}
